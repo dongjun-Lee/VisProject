@@ -19,5 +19,7 @@ from VisApp import views
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^app/$', views.main),
+    url(r'^main/$', views.main),
+    url(r'^data/$', views.data),
+    url(r'^overview/$', views.overview),
 ]
