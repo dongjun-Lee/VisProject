@@ -6,8 +6,131 @@
       <div class="row">
         <div class="col-lg-12">
           <h1 class="page-header">K-means</h1>
+          <div id="main-body">
+          </div>
         </div>
       </div>
     </div>
   </div>
+  <script>
+    var padding = {left:40, top:20, right:10, bottom: 30}
+    var y_label_padding = 10;
+
+    var svgWidth = 512;
+    var svgHeight = 512;
+
+    var chartWidth = svgWidth - padding.left - padding.right;
+    var chartHeight = svgHeight - padding.top - padding.bottom;
+
+    var xScale = d3.scale.linear().range([0, chartWidth]);
+    var xAxis = d3.svg.axis().orient("bottom").scale(xScale);
+
+    var yScale = d3.scale.linear().range([chartHeight, 0]);
+    var yAxis = d3.svg.axis().orient("left").scale(yScale);
+
+    var svg = d3.select("#main-body")
+      .append("svg").attr({width: svgWidth, height: svgHeight})
+
+    var chart = svg.append("g")
+      .attr("transform", "translate(" + padding.left + "," + padding.top + ")");
+
+    var tip = d3.tip()
+      .attr("class", "d3-tip")
+      .direction("n")
+      .offset([-10,0])
+      .html(function(d){
+        return d.x + " , " + d.y;
+      });
+
+    {% load staticfiles %}
+    d3.csv("{% static "test.csv" %}", function(error, csv){
+      var xs = csv.map(function(d){return parseFloat(d.x)});
+      var ys = csv.map(function(d){return parseFloat(d.y)});
+      var class_labels = csv.map(function(d){return parseInt(d.class_label)});
+  
+      var keys = Object.keys(csv[0]);
+
+      xScale.domain([d3.min(xs), d3.max(xs)]).nice();
+      yScale.domain([d3.min(ys), d3.max(ys)]).nice();
+
+      var unique_class_size = class_labels.filter(function(x,i,a){return a.indexOf(x) == i}).length;
+      var colors = [];
+      for(var i=0;i<unique_class_size;i++){
+        while(true){
+          color = randomColor();
+          if(colors.indexOf(color)<0){
+            colors.push(color);
+            break;
+          }
+        }
+      }
+
+      chart.call(tip);
+
+      chart.selectAll(".dot")
+        .data(csv)
+        .enter()
+        .append("circle")
+        .attr("cx", function(d){return xScale(parseFloat(d.x))})
+        .attr("cy", function(d){return yScale(parseFloat(d.y))})
+        .attr("r", 3)
+        .style("fill", function(d){return colors[parseInt(d.class_label)-1]})
+        .on("mouseover", tip.show)
+        .on("mouseout", tip.hide);
+
+      chart.append("g").attr("class", "x axis")
+        .attr("transform", "translate(0," + chartHeight + ")")
+        .call(xAxis);
+
+      chart.append("g").attr("class", "y axis")
+        .call(yAxis);
+
+      svg.append("text")
+        .attr("text-anchor", "middle")
+        .attr("transform", "translate(" + (padding.left + chartWidth/2) + "," + (padding.top + padding.bottom + chartHeight) + ")")
+        .text(keys[0]);
+
+      svg.append("text")
+        .attr("text-anchor", "middle")
+        .attr("transform","translate(" + y_label_padding + "," +  (padding.top + chartHeight/2) + ")rotate(-90)")
+        .text(keys[1]);
+
+    }); 
+
+  var randomColor = (function(){
+    var golden_ratio_conjugate = 0.618033988749895;
+    var h = Math.random();
+
+    var hslToRgb = function (h, s, l){
+        var r, g, b;
+
+        if(s == 0){
+            r = g = b = l; // achromatic
+        }else{
+            function hue2rgb(p, q, t){
+                if(t < 0) t += 1;
+                if(t > 1) t -= 1;
+                if(t < 1/6) return p + (q - p) * 6 * t;
+                if(t < 1/2) return q;
+                if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            }
+
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+
+        return '#'+Math.round(r * 255).toString(16)+Math.round(g * 255).toString(16)+Math.round(b * 255).toString(16);
+    };
+    
+    return function(){
+      h += golden_ratio_conjugate;
+      h %= 1;
+      return hslToRgb(h, 0.5, 0.60);
+    };
+  })();  
+  </script>
 {% endblock %}
