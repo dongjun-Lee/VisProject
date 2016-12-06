@@ -21,5 +21,8 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^main/$', views.main),
     url(r'^data/$', views.data),
+    url(r'^data/upload$', views.uploadFile),
     url(r'^overview/$', views.overview),
+    url(r'^kmeans/$', views.kmenas),
+    url(r'^dbscan/$', views.dbscan),
 ]
