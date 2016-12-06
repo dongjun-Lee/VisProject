@@ -47,7 +47,6 @@ def kmeans(request):
 	for i, row in enumerate(selected_dics):
 		selected_dics[i]["class"] = str(kmeans.labels_[i])
 
-	print(selected_dics)
 	return render(request, 'kmeans.html', {"data": tuple(selected_dics)})
 
 def dbscan(request):
