@@ -23,6 +23,6 @@ urlpatterns = [
     url(r'^data/$', views.data),
     url(r'^data/upload$', views.uploadFile),
     url(r'^overview/$', views.overview),
-    url(r'^kmeans/$', views.kmenas),
+    url(r'^kmeans/$', views.kmeans),
     url(r'^dbscan/$', views.dbscan),
 ]

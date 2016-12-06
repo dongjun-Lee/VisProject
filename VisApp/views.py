@@ -23,7 +23,10 @@ def uploadFile(request):
 def overview(request):
 	return render(request, 'overview.html')
 
-def kmenas(request):
+def kmeans(request):
+
+
+		
 	return render(request, 'kmeans.html')
 
 def dbscan(request):
