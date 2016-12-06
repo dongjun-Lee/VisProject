@@ -29,19 +29,26 @@ def overview(request):
 	return render(request, 'overview.html')
 
 def kmeans(request):
+	N = 7
+	selected_column_names = ["x","y"]
 
 	with open(settings.STATIC_ROOT + "/test.csv","r") as f:
-		data = list(csv.reader(f, delimiter=','))
-		column_names = data[0]
-		data = [[float(i) for i in row][:-1] for row in data[1:]]
+		data = list(csv.DictReader(f))
 
-	kmeans = KMeans(n_clusters=6).fit(data)
+		selected_dics = []
+		selected_list = []
+		for row in data:
+			selected_row = dict([(key,row[key]) for key in selected_column_names])
+			selected_dics.append(selected_row)
+			selected_list.append(selected_row.values())
 
-	for i, row in enumerate(data):
-		row.append(kmeans.labels_[i])
-	print(data)
+	kmeans = KMeans(n_clusters=N).fit(selected_list)
 
-	return render(request, 'kmeans.html')
+	for i, row in enumerate(selected_dics):
+		selected_dics[i]["class"] = str(kmeans.labels_[i])
+
+	print(selected_dics)
+	return render(request, 'kmeans.html', {"data": tuple(selected_dics)})
 
 def dbscan(request):
 	return render(request, 'dbscan.html')
