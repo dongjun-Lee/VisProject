@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
 
 from sklearn.cluster import KMeans
 import numpy as np
@@ -28,10 +29,7 @@ def uploadFile(request):
 def overview(request):
 	return render(request, 'overview.html')
 
-def kmeans(request):
-	N = 7
-	selected_column_names = ["x","y"]
-
+def do_kmeans(K,max_iter,n_init,selected_column_names):
 	with open(settings.STATIC_ROOT + "/test.csv","r") as f:
 		data = list(csv.DictReader(f))
 
@@ -42,12 +40,31 @@ def kmeans(request):
 			selected_dics.append(selected_row)
 			selected_list.append(selected_row.values())
 
-	kmeans = KMeans(n_clusters=N).fit(selected_list)
+	kmeans = KMeans(n_clusters=K,max_iter=max_iter,n_init=n_init).fit(selected_list)
 
 	for i, row in enumerate(selected_dics):
 		selected_dics[i]["class"] = str(kmeans.labels_[i])
+	
+	return selected_dics
 
-	return render(request, 'kmeans.html', {"data": tuple(selected_dics)})
+def kmeans(request):
+	K = 2
+	max_iter = 300
+	n_init = 10
+	selected_column_names = ["x","y"]
+
+	result = do_kmeans(K,max_iter,n_init,selected_column_names)
+	return render(request, 'kmeans.html', {"data": tuple(result)})
+
+def ajax_kmeans(request):
+	K = int(request.GET["K"].encode('utf-8'))
+	max_iter = int(request.GET["max_iter"].encode('utf-8'))
+	n_init = int(request.GET["n_init"].encode('utf-8'))
+	selected_column_names = ["x","y"]
+
+	result = do_kmeans(K, max_iter, n_init,selected_column_names)
+	mimetype = "application/json"
+	return HttpResponse(json.dumps(result), mimetype)
 
 def dbscan(request):
 	return render(request, 'dbscan.html')

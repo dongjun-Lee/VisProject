@@ -25,4 +25,5 @@ urlpatterns = [
     url(r'^overview/$', views.overview),
     url(r'^kmeans/$', views.kmeans),
     url(r'^dbscan/$', views.dbscan),
+    url(r'^ajax/kmeans/$', views.ajax_kmeans)
 ]

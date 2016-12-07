@@ -25,7 +25,7 @@ SECRET_KEY = '2v-m36cqog3+vf2jcidsezj1#9k@jzwq@0@l+-gh5b5ose!01p'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [u'147.46.219.125']
 
 
 # Application definition
@@ -74,7 +74,8 @@ WSGI_APPLICATION = 'VisProject.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
-DATABASES = { 
+DATABASES = {}
+"""
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'firstapp',
@@ -84,7 +85,7 @@ DATABASES = {
         'PORT' : '', 
     }   
 }
-
+"""
 
 
 # Internationalization
