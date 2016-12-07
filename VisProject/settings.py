@@ -75,14 +75,6 @@ WSGI_APPLICATION = 'VisProject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 DATABASES = { 
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'firstapp',
-        'USER' : 'root',
-        'PASSWORD' : 'ldj910129',
-        'HOST' : 'localhost',
-        'PORT' : '', 
-    }   
 }
 
 

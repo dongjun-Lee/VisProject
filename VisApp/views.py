@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.core.files import File
 from django.core.files.storage import FileSystemStorage
 import json
 import csv
+import os
 
 # Create your views here.
 def main(request):
@@ -12,8 +14,7 @@ def data(request):
 	return render(request, 'data.html')
 
 def uploadFile(request):
-	# TODO : delete original file if exists
-
+	os.remove(settings.MEDIA_ROOT + "/data.csv")
 	csv = request.FILES['file']
 	fs = FileSystemStorage()
 	filename = fs.save("data.csv", csv)
@@ -23,7 +24,8 @@ def uploadFile(request):
 def overview(request):
 	return render(request, 'overview.html')
 
-def kmenas(request):
+def kmeans(request):
+	csv = open("data.csv", 'r')
 	return render(request, 'kmeans.html')
 
 def dbscan(request):
