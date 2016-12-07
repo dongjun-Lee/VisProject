@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block body %}
+  <div id="page-wrapper">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <h1 class="page-header">Hierarchical Clustering</h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+  	d3.csv("/media/data.csv", function(data) {
+      var columns = d3.keys(data[0]);
+      console.log(columns);
+    });
+  </script>
+{% endblock %}

@@ -9,5 +9,6 @@ def get_menu_list():
 		{'title' : 'Overview', 'url' : '/overview/'},
 		{'title' : 'K-means', 'url' : '/kmeans/'},
 		{'title' : 'DBSCAN', 'url' : '/dbscan/'},
+		{'title' : 'Hierarchical Clustering', 'url' : '/hierarchical/'},
 	]
 	return menus

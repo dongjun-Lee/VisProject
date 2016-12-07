@@ -26,5 +26,6 @@ urlpatterns = [
     url(r'^overview/$', views.overview),
     url(r'^kmeans/$', views.kmeans),
     url(r'^dbscan/$', views.dbscan),
+    url(r'^hierarchical/$', views.hierarchical),
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes':True}),
 ]

@@ -54,3 +54,18 @@ def dbscan(request):
 	return render(request, 'dbscan.html')
 
 
+def hierarchical(request):
+	return render(request, 'hierarchical.html')
+
+
+
+
+
+
+
+
+
+
+
+
+
