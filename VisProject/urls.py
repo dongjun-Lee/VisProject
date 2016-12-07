@@ -25,8 +25,8 @@ urlpatterns = [
     url(r'^data/upload$', views.uploadFile),
     url(r'^overview/$', views.overview),
     url(r'^kmeans/$', views.kmeans),
-    url(r'^ajax/kmeans/$', views.ajax_kmeans)
+    url(r'^ajax/kmeans/$', views.ajax_kmeans),
     url(r'^dbscan/$', views.dbscan),
     url(r'^hierarchical/$', views.hierarchical),
-    url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes':True}),
+    #url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT,'show_indexes':True}),
 ]
