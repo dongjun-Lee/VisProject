@@ -41,13 +41,13 @@ def preprocess_csv(selected_column_names=["x","y"]):
 
 		return selected_data
 
-def convert4train(data):
-    return [row.values() for row in data]
+def conv2array(data):
+    return np.array([row.values() for row in data])
 
 def do_kmeans(K=2, max_iter=300, n_init=10):
 	data = preprocess_csv()
 
-	kmeans = KMeans(n_clusters=K,max_iter=max_iter,n_init=n_init).fit(convert4train(data))
+	kmeans = KMeans(n_clusters=K, max_iter=max_iter, n_init=n_init).fit(conv2array(data))
 	for i, row in enumerate(data):
 	    data[i]["class"] = str(kmeans.labels_[i])
 	
@@ -56,8 +56,8 @@ def do_kmeans(K=2, max_iter=300, n_init=10):
 def do_dbscan(eps=0.5, min_samples=5):
 	data = preprocess_csv()
 
-	dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(convert4train(data))
-	for i, row in enumerae(data):
+	dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(data))
+	for i, row in enumerate(data):
 		data[i]["class"] = str(dbscan.labels_[i])
 
 	return data
@@ -85,7 +85,7 @@ def dbscan(request):
 	return render(request, 'dbscan.html', {"data": tuple(result)})
 
 def ajax_dbscan(request):
-	eps = int(request.GET["eps"].encode("utf-8"))
+	eps = float(request.GET["eps"].encode("utf-8"))
 	min_samples = int(request.GET["min_samples"].encode("utf-8"))
 	selected_column_names = ["x","y"]
 
