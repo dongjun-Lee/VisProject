@@ -6,7 +6,7 @@
       <div class="row">
         <div class="col-lg-12">
           <h1 class="page-header">K-means</h1>
-          <div id="conf-box" class="col-sm-4">
+          <div id="conf-box" class="col-sm-6">
             <div class="panel panel-info">
               <div class="panel panel-heading">
                 <h3 class="panel-title">Configuration</h3>
@@ -76,7 +76,16 @@
         }
       })
       .done(function(res){
-        console.log(res);
+        preprocess(res);
+        //chart.select(".y.axis").transition().duration(300).call(yAxis);
+        chart.selectAll(".dot")
+          .data(res)
+          .transition()
+          .duration(500)
+          .delay(function(d,i){return i*2})
+          //.attr("cx", function(d){console.log(d); return xScale(parseFloat(d[keys[0]]))})
+          //.attr("cy", function(d){return ySacle(parseFloat(d[keys[1]]))}) 
+          .style("fill", function(d){return colors[parseInt(d[keys[2]])-1]});
       });
     });
   </script>
