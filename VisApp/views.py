@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.core.files import File
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
 
@@ -8,6 +9,7 @@ import numpy as np
 
 import json
 import csv
+import os
 
 
 # Create your views here.
@@ -18,8 +20,7 @@ def data(request):
 	return render(request, 'data.html')
 
 def uploadFile(request):
-	# TODO : delete original file if exists
-
+	os.remove(settings.MEDIA_ROOT + "/data.csv")
 	csv = request.FILES['file']
 	fs = FileSystemStorage()
 	filename = fs.save("data.csv", csv)
@@ -68,5 +69,20 @@ def ajax_kmeans(request):
 
 def dbscan(request):
 	return render(request, 'dbscan.html')
+
+
+def hierarchical(request):
+	return render(request, 'hierarchical.html')
+
+
+
+
+
+
+
+
+
+
+
 
 
