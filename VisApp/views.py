@@ -64,7 +64,7 @@ def do_clustering(selected_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,m
 	return selected_data, column_dics
 
 def kmeans(request):
-	result, columns = do_clustering(selected_columns=["x","y"],method="kmeans")
+	result, columns = do_clustering(method="kmeans")
 	return render(request, 'kmeans.html', {"data": tuple(result), "columns": tuple(columns)})
 
 def dbscan(request):
@@ -74,21 +74,18 @@ def dbscan(request):
 def ajax_kmeans(request):
 	K = int(request.GET["K"].encode("utf-8"))
 	max_iter = int(request.GET["max_iter"].encode("utf-8"))
-	selected_cols = request.GET.getlist("columns[]")
-	print("here!!!!!!!!!!!!!!!")
-	print(K,max_iter,selected_cols)
-	selected_columns= ["x","y"]
+	selected_columns = [element.encode("utf-8") for element in request.GET.getlist("columns[]")]
 
 	result, columns = do_clustering(selected_columns=selected_columns, method="kmeans", K=K, max_iter=max_iter)
 	mimetype = "application/json"
 	return HttpResponse(json.dumps(result), mimetype)
 
 def ajax_dbscan(request):
-	eps = float(request.POST["eps"].encode("utf-8"))
-	min_samples = int(request.POST["min_samples"].encode("utf-8"))
-	selected_columns= ["x","y"]
+	eps = float(request.GET["eps"].encode("utf-8"))
+	min_samples = int(request.GET["min_samples"].encode("utf-8"))
+	selected_columns = [element.encode("utf-8") for element in request.GET.getlist("columns[]")]
 
-	result = do_clustering(seleted_columns=selected_columns, method="dbscan", eps=eps, min_samples=min_samples)
+	result, columns = do_clustering(seleted_columns=selected_columns, method="dbscan", eps=eps, min_samples=min_samples)
 	mimetype = "application/json"
 	return HttpResponse(json.dumps(result), mimetype)
 

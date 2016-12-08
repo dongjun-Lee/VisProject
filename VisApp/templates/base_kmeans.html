@@ -18,7 +18,7 @@
                   <div class="col-sm-3">
                     <input id="max-iter-bar" type="text" data-slider-min="100" data-slider-max="500" data-slider-step="100" data-slider-value="300"/>
                   </div>
-                  <div class="col-sm-offset-2 col-sm-2"> 
+                  <div class="col-sm-offset-2 col-sm-2 panel"> 
                     <button id="draw-btn" type="button" class="btn btn-default">
                       <span class="glyphicon glyphicon-pencil"></span> Draw
                     </button>
@@ -26,10 +26,11 @@
                       <span class="glyphicon glyphicon-download-alt"></span> Download
                     </button>
                   </div>
+                </div>
               </form>
-              <div class="col-sm-1">
-                <h4>Columns</h4>
-                <div class="btn-group-vertical" role="group">
+              <div class="col-sm-2">
+                <h4 class="text-center">Columns</h4>
+                <div class="btn-group-vertical col-sm-12" role="group">
                   {% for c in columns %} 
                   <button type="button" class="col_btns btn btn-default {%if c.selected %}btn-primary{% endif %}">{{ c.name }}</button>
                   {% endfor %}
@@ -54,6 +55,7 @@
         return "Current value: " + value;
       }
     });
+
     $("#draw-btn").on("click", function(){
       var selected_cols = []
       $(".col_btns.btn-primary").each(function(){
@@ -71,15 +73,21 @@
       })
       .done(function(res){
         preprocess(res);
-        //chart.select(".y.axis").transition().duration(300).call(yAxis);
+
+        chart.select(".x.axis").transition().duration(300).call(xAxis);
+        chart.select(".y.axis").transition().duration(300).call(yAxis);
+
+		d3.select(".x_label").text(keys[0]);
+		d3.select(".y_label").text(keys[1]);
+		
         chart.selectAll(".dot")
           .data(res)
           .transition()
           .duration(500)
           .delay(function(d,i){return i*2})
-          //.attr("cx", function(d){console.log(d); return xScale(parseFloat(d[keys[0]]))})
-          //.attr("cy", function(d){return ySacle(parseFloat(d[keys[1]]))}) 
-          .style("fill", function(d){return colors[parseInt(d[keys[2]])-1]});
+          .attr("cx", function(d){return xScale(parseFloat(d[keys[0]]))})
+          .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))}) 
+          .style("fill", function(d){return colors[parseInt(d["class"])-1]});
       });
     });
     
