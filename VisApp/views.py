@@ -31,12 +31,12 @@ def uploadFile(request):
 def overview(request):
 	return render(request, 'overview.html')
 
-def preprocess_csv(selected_column_names=["x","y"]):
+def load_csv(selected_columns):
 	with open(settings.STATIC_ROOT + "/test.csv","r") as f:
 		data = list(csv.DictReader(f))
 		selected_data = []
 		for row in data:
-			selected_row = dict([(key,row[key]) for key in selected_column_names])
+			selected_row = dict([(key,row[key]) for key in selected_columns])
 			selected_data.append(selected_row)
 
 		return selected_data
@@ -44,17 +44,18 @@ def preprocess_csv(selected_column_names=["x","y"]):
 def conv2array(data):
     return np.array([row.values() for row in data])
 
-def do_kmeans(K=2, max_iter=300, n_init=10):
-	data = preprocess_csv()
+def do_kmeans(selected_columns, K=2, max_iter=300, n_init=10):
+	data = load_csv(selected_columns)
+	columns = data[0].keys()
 
 	kmeans = KMeans(n_clusters=K, max_iter=max_iter, n_init=n_init).fit(conv2array(data))
 	for i, row in enumerate(data):
 	    data[i]["class"] = str(kmeans.labels_[i])
 	
-	return data
+	return data, columns
 
-def do_dbscan(eps=1.5, min_samples=5):
-	data = preprocess_csv()
+def do_dbscan(selected_columns, eps=1.5, min_samples=5):
+	data = load_csv(selected_columns)
 
 	dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(data))
 	for i, row in enumerate(data):
@@ -62,34 +63,40 @@ def do_dbscan(eps=1.5, min_samples=5):
 
 	return data
 
-def kmeans(request):
-	selected_column_names = ["x","y"]
+def make_column_dics(columns, selected_columns):
+	 return [dict[("name", c), ("selected", c in selected_columns)] for c in columns]
+			result.append(dict[("name",c), ("selected",False)])
+	return [dict[("name", c), ("selected", (c in selected_columns))] for c in columns]
 
-	result = do_kmeans()
-	return render(request, 'kmeans.html', {"data": tuple(result)})
+def kmeans(request):
+	selected_columns= ["x","y"]
+	result, columns = do_kmeans(selected_columns)
+		tuple(make_column_dics(columns, seleted_columns))})
+	return render(request, 'kmeans.html', {"data": tuple(result), "columns":
+		tuple(make_column_dics(columns, selected_columns))})
 
 def ajax_kmeans(request):
 	K = int(request.GET["K"].encode("utf-8"))
 	max_iter = int(request.GET["max_iter"].encode("utf-8"))
 	n_init = int(request.GET["n_init"].encode("utf-8"))
-	selected_column_names = ["x","y"]
+	selected_columns= ["x","y"]
 
-	result = do_kmeans(K, max_iter, n_init)
+	result = do_kmeans(selected_columns, K, max_iter, n_init)
 	mimetype = "application/json"
 	return HttpResponse(json.dumps(result), mimetype)
 
 def dbscan(request):
-	selected_column_names = ["x","y"]
+	selected_columns= ["x","y"]
 
-	result = do_dbscan()
+	result = do_dbscan(selected_columns)
 	return render(request, 'dbscan.html', {"data": tuple(result)})
 
 def ajax_dbscan(request):
 	eps = float(request.GET["eps"].encode("utf-8"))
 	min_samples = int(request.GET["min_samples"].encode("utf-8"))
-	selected_column_names = ["x","y"]
+	selected_columns= ["x","y"]
 
-	result = do_dbscan(eps=eps, min_samples=min_samples)
+	result = do_dbscan(selected_columns, eps=eps, min_samples=min_samples)
 	mimetype = "application/json"
 	return HttpResponse(json.dumps(result), mimetype)
 
