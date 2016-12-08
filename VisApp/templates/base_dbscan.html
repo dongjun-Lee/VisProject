@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block body %}
+  <div id="page-wrapper">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <h1 class="page-header">DBSCAN</h1>
+          <div id="conf-box" class="col-md-6">
+            <div class="panel panel-info">
+              <div class="panel panel-heading">
+                <h3 class="panel-title">Configuration</h3>
+              </div>
+              <div class="panel-body">
+                <form class="form-horizontal">
+                  <div class="form-group">
+                    <label for="eps-bar" class="col-sm-4 control-label" style="padding-top:0;">eps:</label>
+                    <div class="col-sm-8">
+                      <input id="eps-bar" type="text" data-slider-min="0.1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0.5"/>
+                    </div>
+                  </div>
+                </form>
+                <form class="form-horizontal">
+                  <div class="form-group">
+                    <label for="min-samples-bar" class="col-sm-4 control-label" style="padding-top:0;">min_samples:</label>
+                    <div class="col-sm-8">
+                      <input id="min-samples-bar" type="text" data-slider-min="1" data-slider-max="10"  data-slider-value="5"/>
+                    </div>
+                  </div>
+                </form>
+                <button id="draw-btn" type="button" class="btn btn-default btn-lg col-sm-offset-4 col-sm-4">
+                  <span class="glyphicon glyphicon-pencil" aria-hidden"true"></span> Draw
+                </button>
+              </div>
+            </div>
+          </div>
+          {% block dbscan_body %}
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    var eps_slider = new Slider("#eps-bar",{
+      formatter: function(value){
+        return "Current value: " + value;
+      }
+    });
+    var min_samples_slider = new Slider("#min-samples-bar",{
+      formatter: function(value){
+        return "Current value: " + value;
+      }
+    });
+
+    $("#draw-btn").on("click", function(){
+      var req = $.ajax({
+        method: "GET",
+        url: "/ajax/dbscan",
+        data: {
+          "eps": $("#eps-bar").attr("value"),
+          "min_samples": $("#min-samples-bar").attr("value")
+        }
+      })
+      .done(function(res){
+        preprocess(res);
+        chart.selectAll(".dot")
+          .data(res)
+          .transition()
+          .duration(500)
+          .delay(function(d,i){return i*2})
+          .style("fill", function(d){return colors[parseInt(d[keys[2]])-1]});
+      });
+    });
+  </script>
+{% endblock %}

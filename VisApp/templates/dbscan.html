@@ -1,13 +1,141 @@
-{% extends 'base.html' %}
+{% extends 'base_dbscan.html' %}
 
-{% block body %}
-  <div id="page-wrapper">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-lg-12">
-          <h1 class="page-header">DBSCAN</h1>
-        </div>
-      </div>
-    </div>
+{% block dbscan_body %}
+  <div id="main-body" class="col-md-6">
   </div>
+  <script>
+    var data = [];
+    {% for row in data %}
+      data.push({{row|safe}});
+    {% endfor %}
+    var keys = Object.keys(data[0]);
+    var class_column = keys[keys.length-1];
+    keys = keys.slice(0,length-1).sort();
+    keys.push(class_column);
+
+    var padding = {left:40, top:10, right:10, bottom: 40}
+    var label_padding = 10;
+
+    var svgWidth = 512;
+    var svgHeight = 512;
+
+    var chartWidth = svgWidth - padding.left - padding.right;
+    var chartHeight = svgHeight - padding.top - padding.bottom;
+
+    var xScale = d3.scale.linear().range([0, chartWidth]);
+    var xAxis = d3.svg.axis().orient("bottom");
+
+    var yScale = d3.scale.linear().range([chartHeight, 0]);
+    var yAxis = d3.svg.axis().orient("left");
+
+    var svg = d3.select("#main-body")
+      .append("svg").attr({width: svgWidth, height: svgHeight})
+
+    var chart = svg.append("g")
+      .attr("transform", "translate(" + padding.left + "," + padding.top + ")");
+
+    var tip = d3.tip()
+      .attr("class", "d3-tip")
+      .direction("n")
+      .offset([-10,0])
+      .html(function(d){
+        return d[keys[0]] + " , " + d[keys[1]];
+      });
+
+    var randomColor = (function(){
+      var golden_ratio_conjugate = 0.618033988749895;
+      var h = Math.random();
+
+      var hslToRgb = function (h, s, l){
+          var r, g, b;
+
+          if(s == 0){
+              r = g = b = l; // achromatic
+          }else{
+              function hue2rgb(p, q, t){
+                  if(t < 0) t += 1;
+                  if(t > 1) t -= 1;
+                  if(t < 1/6) return p + (q - p) * 6 * t;
+                  if(t < 1/2) return q;
+                  if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                  return p;
+              }
+
+              var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+              var p = 2 * l - q;
+              r = hue2rgb(p, q, h + 1/3);
+              g = hue2rgb(p, q, h);
+              b = hue2rgb(p, q, h - 1/3);
+          }
+
+          return '#'+Math.round(r * 255).toString(16)+Math.round(g * 255).toString(16)+Math.round(b * 255).toString(16);
+      };
+      
+      return function(){
+        h += golden_ratio_conjugate;
+        h %= 1;
+        return hslToRgb(h, 0.5, 0.60);
+      };
+    })();
+
+    var colors;
+
+    function preprocess(data){
+      var xs = data.map(function(d){return parseFloat(d[keys[0]])});
+      var ys = data.map(function(d){return parseFloat(d[keys[1]])});
+      var class_labels = data.map(function(d){return parseInt(d[keys[2]])});
+
+      xScale.domain([d3.min(xs), d3.max(xs)]).nice();
+      yScale.domain([d3.min(ys), d3.max(ys)]).nice();
+
+      xAxis.scale(xScale);
+      yAxis.scale(yScale);
+
+      var unique_class_size = class_labels.filter(function(x,i,a){return a.indexOf(x) == i}).length;
+
+      colors = [];
+      for(var i=0;i<unique_class_size;i++){
+        while(true){
+          color = randomColor();
+          if(colors.indexOf(color)<0){
+            colors.push(color);
+            break;
+          }
+        }
+      }
+    }
+
+    preprocess(data);
+
+    chart.call(tip);
+
+    chart.selectAll(".dot")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "dot")
+      .attr("cx", function(d){return xScale(parseFloat(d[keys[0]]))})
+      .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))})
+      .attr("r", 3)
+      .style("fill", function(d){return colors[parseInt(d[keys[2]])-1]})
+      .on("mouseover", tip.show)
+      .on("mouseout", tip.hide);
+
+    chart.append("g").attr("class", "x axis")
+      .attr("transform", "translate(0," + chartHeight + ")")
+      .call(xAxis);
+
+    chart.append("g").attr("class", "y axis")
+      .call(yAxis);
+
+    svg.append("text")
+      .attr("text-anchor", "middle")
+      .attr("transform", "translate(" + (padding.left + chartWidth/2) + "," + (padding.top + padding.bottom + chartHeight-label_padding) + ")")
+      .text(keys[0]);
+
+    svg.append("text")
+      .attr("text-anchor", "middle")
+      .attr("transform","translate(" + label_padding + "," +  (padding.top + chartHeight/2) + ")rotate(-90)")
+      .text(keys[1]);
+  </script>
 {% endblock %}
