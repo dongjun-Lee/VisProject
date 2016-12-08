@@ -6,49 +6,35 @@
       <div class="row">
         <div class="col-lg-12">
           <h1 class="page-header">K-means</h1>
-          <div id="conf-box" class="col-md-6">
-            <div class="panel panel-info">
-              <div class="panel panel-heading">
-                <h3 class="panel-title">Configuration</h3>
-              </div>
-              <div class="panel-body">
-                <form class="form-horizontal">
-                  <div class="form-group">
-                    <label for="K-bar" class="col-sm-4 control-label" style="padding-top:0;">K:</label>
-                    <div class="col-sm-8">
-                      <input id="K-bar" type="text" data-slider-min="1" data-slider-max="10" data-slider-value="2"/>
-                    </div>
+          <div class="panel panel-info">
+            <div class="panel-body">
+              <form class="form-horizontal">
+                <div class="form-group">
+                  <label for="K-bar" class="col-sm-1 control-label" style="padding-top:0;">K:</label>
+                  <div class="col-sm-3">
+                    <input id="K-bar" type="text" data-slider-min="1" data-slider-max="10" data-slider-value="2"/>
                   </div>
-                </form>
-                <form class="form-horizontal">
-                  <div class="form-group">
-                    <label for="max-iter-bar" class="col-sm-4 control-label" style="padding-top:0;">max_iter:</label>
-                    <div class="col-sm-8">
-                      <input id="max-iter-bar" type="text" data-slider-min="100" data-slider-max="500" data-slider-step="100" data-slider-value="300"/>
-                    </div>
+                  <label for="max-iter-bar" class="col-sm-1 control-label" style="padding-top:0;">max_iter:</label>
+                  <div class="col-sm-3">
+                    <input id="max-iter-bar" type="text" data-slider-min="100" data-slider-max="500" data-slider-step="100" data-slider-value="300"/>
                   </div>
-                </form>
-                <form class="form-horizontal">
-                  <div class="form-group">
-                    <label for="n-init-bar" class="col-sm-4 control-label" style="padding-top:0;">n_init:</label>
-                    <div class="col-sm-8">
-                      <input id="n-init-bar" type="text" data-slider-min="5" data-slider-max="20" data-slider-value="10"/>  
-                    </div>
-                  </div>
-                </form>
-                <div class="btn-group col-sm-12" role="group">
-                  <button type="button" class="btn btn-default">Left</button>
-                  <button type="button" class="btn btn-default">Middle</button>
-                  <button type="button" class="btn btn-default">Right</button>
+                  <button id="draw-btn" type="button" class="btn btn-default col-sm-offset-2 col-sm-1">
+                    <span class="glyphicon glyphicon-pencil" aria-hidden"true"></span> Draw
+                  </button>
                 </div>
-                <button id="draw-btn" type="button" class="btn btn-default btn-lg col-sm-offset-4 col-sm-4">
-                  <span class="glyphicon glyphicon-pencil" aria-hidden"true"></span> Draw
-                </button>
+              </form>
+              <div class="col-sm-1">
+                <h4>Columns</h4>
+                <div class="btn-group-vertical" role="group">
+                  {% for c in columns %} 
+                  <button type="button" class="col_btns btn btn-default {%if c.selected %}btn-primary{% endif %}">{{ c.name }}</button>
+                  {% endfor %}
+                </div>
               </div>
+              {% block kmeans_body %}
+              {% endblock %}
             </div>
           </div>
-          {% block kmeans_body %}
-          {% endblock %}
         </div>
       </div>
     </div>
@@ -64,20 +50,19 @@
         return "Current value: " + value;
       }
     });
-    var n_init_slider = new Slider("#n-init-bar",{
-      formatter: function(value){
-        return "Current value: " + value;
-      }
-    });
-
     $("#draw-btn").on("click", function(){
+      var selected_cols = []
+      $(".col_btns.btn-primary").each(function(){
+        selected_cols.push($(this).text());
+      });
+
       var req = $.ajax({
         method: "GET",
         url: "/ajax/kmeans",
         data: {
           "K": $("#K-bar").attr("value"),
           "max_iter": $("#max-iter-bar").attr("value"),
-          "n_init": $("#n-init-bar").attr("value")
+          "columns[]": selected_cols
         }
       })
       .done(function(res){
@@ -92,6 +77,10 @@
           //.attr("cy", function(d){return ySacle(parseFloat(d[keys[1]]))}) 
           .style("fill", function(d){return colors[parseInt(d[keys[2]])-1]});
       });
+    });
+    
+    $(".col_btns").click(function(){
+      $(this).toggleClass("btn-primary");
     });
   </script>
 {% endblock %}
