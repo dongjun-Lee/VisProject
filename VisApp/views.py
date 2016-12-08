@@ -53,7 +53,7 @@ def do_kmeans(K=2, max_iter=300, n_init=10):
 	
 	return data
 
-def do_dbscan(eps=0.5, min_samples=5):
+def do_dbscan(eps=1.5, min_samples=5):
 	data = preprocess_csv()
 
 	dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(data))
