@@ -2,12 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="Dongjun Lee">
-    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+    <META http-equiv="Expires" content="-1"> 
+    <META http-equiv="Pragma" content="no-cache"> 
+    <META http-equiv="Cache-Control" content="No-Cache"> 
     <link rel="icon" href="../../favicon.ico">
 
     <title>Interactive Clustering with Visualization</title>
@@ -62,6 +63,8 @@
       }
     </style>
     <!-- library and css files for d3 [end]-->
+
+    {% block css %} {% endblock %}
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.5.3/css/bootstrap-slider.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.5.3/bootstrap-slider.min.js"></script>

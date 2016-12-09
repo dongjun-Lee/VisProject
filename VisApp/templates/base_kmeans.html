@@ -56,6 +56,10 @@
       }
     });
 
+    $("#download-btn").on("click", function(){
+      window.location = "/media/result.csv";
+    });
+
     $("#draw-btn").on("click", function(){
       var selected_cols = []
       $(".col_btns.btn-primary").each(function(){
