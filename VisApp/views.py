@@ -80,8 +80,6 @@ def kmeans(request):
 	result, selected_result, vis_columns, cal_columns = do_clustering(method="kmeans")
 	save_csv(result)
 
-	print(selected_result)
-
 	return render(request, 'kmeans.html', {
 		"data": tuple(selected_result),
 		"vis_columns": tuple(vis_columns),
