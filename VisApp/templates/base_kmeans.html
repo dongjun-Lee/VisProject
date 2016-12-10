@@ -80,7 +80,6 @@
       $(".cal_col_btns.btn-primary").each(function(){
         selected_cal_cols.push($(this).text());
       });
-      console.log(selected_cols);
 
       var req = $.ajax({
         method: "GET",
@@ -93,22 +92,32 @@
         }
       })
       .done(function(res){
-        preprocess(res);
+        if(selected_vis_cols.length >=3){
+          draw_scatter_matrix();
+          $("#main-body-plot").hide();
+          $("#main-body-matrix").show();
+        }
+        else{
+          preprocess(res);
 
-        chart.select(".x.axis").transition().duration(300).call(xAxis);
-        chart.select(".y.axis").transition().duration(300).call(yAxis);
+          chart.select(".x.axis").transition().duration(300).call(xAxis);
+          chart.select(".y.axis").transition().duration(300).call(yAxis);
 
-        d3.select(".x_label").text(keys[0]);
-        d3.select(".y_label").text(keys[1]);
+          d3.select(".x_label").text(keys[0]);
+          d3.select(".y_label").text(keys[1]);
 
-        chart.selectAll(".dot")
-          .data(res)
-          .transition()
-          .duration(500)
-          .delay(function(d,i){return i*2})
-          .attr("cx", function(d){return xScale(parseFloat(d[keys[0]]))})
-          .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))})
-          .style("fill", function(d){return colors[parseInt(d["class_label"])-1]});
+          chart.selectAll(".dot")
+            .data(res)
+            .transition()
+            .duration(500)
+            .delay(function(d,i){return i*2})
+            .attr("cx", function(d){return xScale(parseFloat(d[keys[0]]))})
+            .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))})
+            .style("fill", function(d){return colors[parseInt(d["class_label"])-1]});
+
+          $("#main-body-plot").show();
+          $("#main-body-matrix").hide();
+        }
       });
     });
 
