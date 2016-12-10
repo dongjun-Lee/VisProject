@@ -65,6 +65,7 @@
       $(".col_btns.btn-primary").each(function(){
         selected_cols.push($(this).text());
       });
+      console.log(selected_cols);
 
       var req = $.ajax({
         method: "GET",
