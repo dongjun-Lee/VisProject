@@ -80,6 +80,7 @@
       $(".cal_col_btns.btn-primary").each(function(){
         selected_cal_cols.push($(this).text());
       });
+      console.log(selected_cols);
 
       var req = $.ajax({
         method: "GET",
