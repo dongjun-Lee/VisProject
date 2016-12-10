@@ -31,37 +31,43 @@ def uploadFile(request):
 def overview(request):
 	return render(request, 'overview.html')
 
-def load_csv(selected_columns):
+def load_csv():
 	with open(settings.MEDIA_ROOT + "/data.csv","r") as f:
 		data = list(csv.DictReader(f))
-		if not selected_columns:
-			selected_columns = sorted(list(data[0].keys()))[0:2]
-		selected_data = []
-		for row in data:
-			selected_row = dict([(key,row[key]) for key in selected_columns])
-			selected_data.append(selected_row)
+		return data
 
-		return data, selected_data, selected_columns
+def project_data(data, columns):
+	selected_data = []
+	for row in data:
+		selected_row = dict([(key,row[key]) for key in columns])
+		selected_data.append(selected_row)
+
+	return selected_data
 
 def conv2array(data):
 	return np.array([row.values() for row in data])
 
-def do_clustering(selected_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,min_samples=5):
-	data, selected_data, selected_columns = load_csv(selected_columns)
+def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,min_samples=5):
+	data = load_csv()
 	columns = sorted(list(data[0].keys()))
+	if not vis_columns:
+		vis_columns = columns[:2]
+	if not cal_columns:
+		cal_columns = columns
+
+	training_data = project_data(data,cal_columns)
 
 	if method == "kmeans":
-		result = KMeans(n_clusters=K, max_iter=max_iter).fit(conv2array(data))
+		result = KMeans(n_clusters=K, max_iter=max_iter).fit(conv2array(training_data))
 	else:
-		result = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(data))
+		result = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(training_data))
 		
 	for i, row in enumerate(data):
-		data[i]["class"] = str(result.labels_[i])
-		selected_data[i]["class"] = str(result.labels_[i])
+		data[i]["class_label"] = str(result.labels_[i])
 
-	column_dics = [dict([("name", c), ("selected", c in selected_columns)]) for c in columns]
-
-	return data, selected_data, column_dics
+	vis_column_dics = [dict([("name", c), ("selected", c in vis_columns)]) for c in columns]
+	cal_column_dics = [dict([("name", c), ("selected", c in cal_columns)]) for c in columns]
+	return data, project_data(data, vis_columns+["class_label"]), vis_column_dics, cal_column_dics
 
 def save_csv(result):
 	with open(settings.MEDIA_ROOT + "/result.csv", "w") as f:
@@ -71,9 +77,16 @@ def save_csv(result):
 			w.writerow(row)
 
 def kmeans(request):
-	result, selected_result, columns = do_clustering(method="kmeans")
+	result, selected_result, vis_columns, cal_columns = do_clustering(method="kmeans")
 	save_csv(result)
-	return render(request, 'kmeans.html', {"data": tuple(selected_result), "columns": tuple(columns)})
+
+	print(selected_result)
+
+	return render(request, 'kmeans.html', {
+		"data": tuple(selected_result),
+		"vis_columns": tuple(vis_columns),
+		"cal_columns": tuple(cal_columns)
+	})
 
 def dbscan(request):
 	result, columns = do_clustering(method="dbscan")
@@ -82,9 +95,10 @@ def dbscan(request):
 def ajax_kmeans(request):
 	K = int(request.GET["K"].encode("utf-8"))
 	max_iter = int(request.GET["max_iter"].encode("utf-8"))
-	selected_columns = [element.encode("utf-8") for element in request.GET.getlist("columns[]")]
+	selected_vis_columns = [element.encode("utf-8") for element in request.GET.getlist("vis_columns[]")]
+	selected_cal_columns = [element.encode("utf-8") for element in request.GET.getlist("cal_columns[]")]
 
-	result, selected_result, columns = do_clustering(selected_columns=selected_columns, method="kmeans", K=K, max_iter=max_iter)
+	result, selected_result, _, _ = do_clustering(vis_columns=selected_vis_columns, cal_columns=selected_cal_columns, method="kmeans", K=K, max_iter=max_iter)
 	save_csv(result)
 	mimetype = "application/json"
 	return HttpResponse(json.dumps(selected_result), mimetype)

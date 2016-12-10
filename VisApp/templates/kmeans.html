@@ -14,8 +14,8 @@
     var padding = {left:40, top:10, right:10, bottom: 40}
     var label_padding = 10;
 
-    var svgWidth = 768;
-    var svgHeight = 512;
+    var svgWidth = 768 * 0.9;
+    var svgHeight = 512 * 0.9;
 
     var chartWidth = svgWidth - padding.left - padding.right;
     var chartHeight = svgHeight - padding.top - padding.bottom;
@@ -92,12 +92,12 @@
 
     function preprocess(data_){
       keys = Object.keys(data_[0]);
-      keys.splice(keys.indexOf("class"),1);
+      keys.splice(keys.indexOf("class_label"),1);
       keys = keys.sort();
 
       var xs = data_.map(function(d){return parseFloat(d[keys[0]])});
       var ys = data_.map(function(d){return parseFloat(d[keys[1]])});
-      var class_labels = data_.map(function(d){return parseInt(d["class"])});
+      var class_labels = data_.map(function(d){return parseInt(d["class_label"])});
 
       xScale.domain([d3.min(xs), d3.max(xs)]).nice();
       yScale.domain([d3.min(ys), d3.max(ys)]).nice();
@@ -107,9 +107,11 @@
 
       var unique_class_size = class_labels.filter(function(x,i,a){return a.indexOf(x) == i}).length;
 
-      if(K != $("#K-bar").attr("value")){
+      var K_bar_value = $("#K-bar").attr("value");
+      if(K_bar_value == undefined) K_bar_value = 2;
+      if(K != K_bar_value){
         pick_colors(unique_class_size);
-        K = $("#K-bar").attr("value");
+        K = K_bar_value;
       }
     }
 
@@ -125,7 +127,7 @@
       .attr("cx", function(d){return xScale(parseFloat(d[keys[0]]))})
       .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))})
       .attr("r", 3)
-      .style("fill", function(d){return colors[parseInt(d["class"])-1]})
+      .style("fill", function(d){return colors[parseInt(d["class_label"])-1]})
       .on("mouseover", tip.show)
       .on("mouseout", tip.hide);
 

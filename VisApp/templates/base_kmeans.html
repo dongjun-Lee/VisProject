@@ -18,7 +18,7 @@
                   <div class="col-sm-3 parameters">
                     <input id="max-iter-bar" type="text" data-slider-min="100" data-slider-max="500" data-slider-step="100" data-slider-value="300"/>
                   </div>
-                  <div class="col-sm-offset-1 col-sm-3"> 
+                  <div class="col-sm-offset-1 col-sm-3">
                     <button id="draw-btn" type="button" class="btn btn-default">
                       <span class="glyphicon glyphicon-pencil"></span> Draw
                     </button>
@@ -29,11 +29,21 @@
                 </div>
               </form>
               <div class="col-sm-2">
-                <h4 class="text-center">Columns</h4>
-                <div class="btn-group-vertical col-sm-12" role="group">
-                  {% for c in columns %} 
-                  <button type="button" class="col_btns btn btn-default {%if c.selected %}btn-primary{% endif %}">{{ c.name }}</button>
-                  {% endfor %}
+                <div class="col-sm-12">
+                  <h5 class="text-center">Visualization Columns</h5>
+                  <div class="btn-group-vertical col-sm-12" style="padding:0;" role="group">
+                    {% for c in vis_columns %}
+                    <button type="button" class="col_btns vis_col_btns btn btn-default {%if c.selected %}btn-primary{% endif %}">{{ c.name }}</button>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="col-sm-12" style="margin-top:10px;">
+                  <h5 class="text-center">Calculation Columns</h5>
+                  <div class="btn-group-vertical col-sm-12" style="padding:0;" role="group">
+                    {% for c in cal_columns %}
+                    <button type="button" class="col_btns cal_col_btns btn btn-default {%if c.selected %}btn-primary{% endif %}">{{ c.name }}</button>
+                    {% endfor %}
+                  </div>
                 </div>
               </div>
               {% block kmeans_body %}
@@ -61,9 +71,14 @@
     });
 
     $("#draw-btn").on("click", function(){
-      var selected_cols = []
-      $(".col_btns.btn-primary").each(function(){
-        selected_cols.push($(this).text());
+      var selected_vis_cols = [];
+      var selected_cal_cols = [];
+
+      $(".vis_col_btns.btn-primary").each(function(){
+        selected_vis_cols.push($(this).text());
+      });
+      $(".cal_col_btns.btn-primary").each(function(){
+        selected_cal_cols.push($(this).text());
       });
 
       var req = $.ajax({
@@ -72,7 +87,8 @@
         data: {
           "K": $("#K-bar").attr("value"),
           "max_iter": $("#max-iter-bar").attr("value"),
-          "columns[]": selected_cols
+          "vis_columns[]": selected_vis_cols,
+          "cal_columns[]": selected_cal_cols
         }
       })
       .done(function(res){
@@ -81,20 +97,20 @@
         chart.select(".x.axis").transition().duration(300).call(xAxis);
         chart.select(".y.axis").transition().duration(300).call(yAxis);
 
-		d3.select(".x_label").text(keys[0]);
-		d3.select(".y_label").text(keys[1]);
-		
+        d3.select(".x_label").text(keys[0]);
+        d3.select(".y_label").text(keys[1]);
+
         chart.selectAll(".dot")
           .data(res)
           .transition()
           .duration(500)
           .delay(function(d,i){return i*2})
           .attr("cx", function(d){return xScale(parseFloat(d[keys[0]]))})
-          .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))}) 
-          .style("fill", function(d){return colors[parseInt(d["class"])-1]});
+          .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))})
+          .style("fill", function(d){return colors[parseInt(d["class_label"])-1]});
       });
     });
-    
+
     $(".col_btns").click(function(){
       $(this).toggleClass("btn-primary");
     });
