@@ -35,8 +35,7 @@ def load_csv(selected_columns):
 	with open(settings.MEDIA_ROOT + "/data.csv","r") as f:
 		data = list(csv.DictReader(f))
 		if not selected_columns:
-                        selected_columns = sorted(list(data[0].keys()))[0:2]
-                        print(selected_columns)
+			selected_columns = sorted(list(data[0].keys()))[0:2]
 		selected_data = []
 		for row in data:
 			selected_row = dict([(key,row[key]) for key in selected_columns])
@@ -57,15 +56,24 @@ def do_clustering(selected_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,m
 		result = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(data))
 		
 	for i, row in enumerate(data):
-	    selected_data[i]["class"] = str(result.labels_[i])
+		data[i]["class"] = str(result.labels_[i])
+		selected_data[i]["class"] = str(result.labels_[i])
 
 	column_dics = [dict([("name", c), ("selected", c in selected_columns)]) for c in columns]
 
-	return selected_data, column_dics
+	return data, selected_data, column_dics
+
+def save_csv(result):
+	with open(settings.MEDIA_ROOT + "/result.csv", "w") as f:
+		w = csv.DictWriter(f, fieldnames=result[0].keys(), delimiter=",")
+		w.writeheader()
+		for row in result:
+			w.writerow(row)
 
 def kmeans(request):
-	result, columns = do_clustering(method="kmeans")
-	return render(request, 'kmeans.html', {"data": tuple(result), "columns": tuple(columns)})
+	result, selected_result, columns = do_clustering(method="kmeans")
+	save_csv(result)
+	return render(request, 'kmeans.html', {"data": tuple(selected_result), "columns": tuple(columns)})
 
 def dbscan(request):
 	result, columns = do_clustering(method="dbscan")
@@ -76,9 +84,10 @@ def ajax_kmeans(request):
 	max_iter = int(request.GET["max_iter"].encode("utf-8"))
 	selected_columns = [element.encode("utf-8") for element in request.GET.getlist("columns[]")]
 
-	result, columns = do_clustering(selected_columns=selected_columns, method="kmeans", K=K, max_iter=max_iter)
+	result, selected_result, columns = do_clustering(selected_columns=selected_columns, method="kmeans", K=K, max_iter=max_iter)
+	save_csv(result)
 	mimetype = "application/json"
-	return HttpResponse(json.dumps(result), mimetype)
+	return HttpResponse(json.dumps(selected_result), mimetype)
 
 def ajax_dbscan(request):
 	eps = float(request.GET["eps"].encode("utf-8"))
