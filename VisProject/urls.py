@@ -20,7 +20,7 @@ from django.conf import settings
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^main/$', views.main),
+    url(r'^main/$', views.data),
     url(r'^data/$', views.data),
     url(r'^data/upload$', views.uploadFile),
     url(r'^overview/$', views.overview),
