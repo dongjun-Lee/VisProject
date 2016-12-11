@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block body %}
+  <div id="page-wrapper">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <h1 class="page-header">Hierarchical Clustering</h1>
+          <div class="panel panel-info">
+            <div class="panel-body">
+              <form class="form-horizontal">
+                <div class="form-group">
+                  <label for="K-bar" class="col-sm-1 control-label parameters">K:</label>
+                  <div class="col-sm-3 parameters">
+                    <input id="K-bar" type="text" data-slider-min="1" data-slider-max="10" data-slider-value="2"/>
+                  </div>
+                  <label for="max-iter-bar" class="col-sm-1 control-label parameters">max_iter:</label>
+                  <div class="col-sm-3 parameters">
+                    <input id="max-iter-bar" type="text" data-slider-min="100" data-slider-max="500" data-slider-step="100" data-slider-value="300"/>
+                  </div>
+                  <div class="col-sm-offset-1 col-sm-3">
+                    <button id="draw-btn" type="button" class="btn btn-default">
+                      <span class="glyphicon glyphicon-pencil"></span> Draw
+                    </button>
+                    <button id="download-btn" type="button" class="btn btn-default">
+                      <span class="glyphicon glyphicon-download-alt"></span> Download
+                    </button>
+                  </div>
+                </div>
+              </form>
+              <div class="col-sm-2">
+                <div class="col-sm-12" style="margin-top:5px;">
+                  <h5 class="text-center">Visualization Columns</h5>
+                  <div class="btn-group-vertical col-sm-12" style="padding:0;" role="group">
+                    {% for c in vis_columns %}
+                    <button type="button" class="col_btns vis_col_btns btn btn-default {%if c.selected %}btn-primary{% endif %}">{{ c.name }}</button>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="col-sm-12" style="margin-top:15px;">
+                  <h5 class="text-center">Calculation Columns</h5>
+                  <div class="btn-group-vertical col-sm-12" style="padding:0;" role="group">
+                    {% for c in cal_columns %}
+                    <button type="button" class="col_btns cal_col_btns btn btn-default {%if c.selected %}btn-primary{% endif %}">{{ c.name }}</button>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              {% block hierarchical_body %}
+              {% endblock %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    var k_slider = new Slider("#K-bar",{
+      formatter: function(value){
+        return "Current value: " + value;
+      }
+    });
+    var max_iter_slider = new Slider("#max-iter-bar",{
+      formatter: function(value){
+        return "Current value: " + value;
+      }
+    });
+
+    $("#download-btn").on("click", function(){
+      window.location = "/media/result.csv";
+    });
+
+    $("#draw-btn").on("click", function(){
+      var selected_vis_cols = [];
+      var selected_cal_cols = [];
+
+      $(".vis_col_btns.btn-primary").each(function(){
+        selected_vis_cols.push($(this).text());
+      });
+      $(".cal_col_btns.btn-primary").each(function(){
+        selected_cal_cols.push($(this).text());
+      });
+
+      var req = $.ajax({
+        method: "GET",
+        url: "/ajax/kmeans",
+        data: {
+          "K": $("#K-bar").attr("value"),
+          "max_iter": $("#max-iter-bar").attr("value"),
+          "vis_columns[]": selected_vis_cols,
+          "cal_columns[]": selected_cal_cols
+        }
+      })
+      .done(function(res){
+        if(selected_vis_cols.length >=3){
+          draw_scatter_matrix();
+          $("#main-body-plot").hide();
+          $("#main-body-matrix").show();
+        }
+        else{
+          preprocess(res);
+
+          chart.select(".x.axis").transition().duration(300).call(xAxis);
+          chart.select(".y.axis").transition().duration(300).call(yAxis);
+
+          d3.select(".x_label").text(keys[0]);
+          d3.select(".y_label").text(keys[1]);
+
+          chart.selectAll(".dot")
+            .data(res)
+            .transition()
+            .duration(500)
+            .delay(function(d,i){return i*2})
+            .attr("cx", function(d){return xScale(parseFloat(d[keys[0]]))})
+            .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))})
+            .style("fill", function(d){return colors[parseInt(d["class_label"])-1]});
+
+          $("#main-body-plot").show();
+          $("#main-body-matrix").hide();
+        }
+      });
+    });
+
+    $(".col_btns").click(function(){
+      $(this).toggleClass("btn-primary");
+    });
+  </script>
+{% endblock %}

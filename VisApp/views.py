@@ -6,6 +6,7 @@ from django.http import HttpResponse
 
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
+from sklearn.cluster import AgglomerativeClustering
 import numpy as np
 
 import json
@@ -59,8 +60,10 @@ def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300
 
 	if method == "kmeans":
 		result = KMeans(n_clusters=K, max_iter=max_iter).fit(conv2array(training_data))
-	else:
+	elif method == "dbscan":
 		result = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(training_data))
+	elif method == "hierarchical":
+		result = AgglomerativeClustering(n_clusters=K, affinity="euclidean")
 		
 	for i, row in enumerate(data):
 		data[i]["class_label"] = str(result.labels_[i])
@@ -117,8 +120,19 @@ def ajax_dbscan(request):
 	return HttpResponse(json.dumps(result), mimetype)
 
 def hierarchical(request):
-	return render(request, 'hierarchical.html')
+	#result, selected_result, vis_columns, cal_columns = do_clustering(method="hierarchical")
+	#save_csv(result, selected_result)
 
+	return render(request, 'hierarchical.html');
+
+	# return render(request, 'hierarchical.html', {
+	# 	"data": tuple(selected_result),
+	# 	"vis_columns": tuple(vis_columns),
+	# 	"cal_columns": tuple(cal_columns)
+	# })
+
+def ajax_hierarchical(request):
+	pass
 
 
 
