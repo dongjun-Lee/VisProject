@@ -31,7 +31,7 @@ svg {
 }
 
 circle {
-  fill-opacity: .7;
+  fill-opacity: .5;
 }
 
 circle.not-selected {
@@ -42,6 +42,15 @@ circle.not-selected {
   fill: #000;
   fill-opacity: .125;
   stroke: #fff;
+}
+
+.hist_bar rect {
+  fill: steelblue;
+}
+
+.hist_bar text {
+  fill: #fff;
+  font: 10px sans-serif;
 }
 
 </style>	  
@@ -64,10 +73,10 @@ circle.not-selected {
 	    <input type="radio" name="options" id="option1" value="option1" autocomplete="off" checked> Summary Table
 	  </label>
 	  <label class="btn btn-primary">
-	    <input type="radio" name="options" id="option2" value="option2" autocomplete="off"> Scatter Plot Matrix
+	    <input type="radio" name="options" id="option2" value="option2" autocomplete="off"> Histogram
 	  </label>
 	  <label class="btn btn-primary">
-	    <input type="radio" name="options" id="option3" value="option3" autocomplete="off"> Histogram
+	    <input type="radio" name="options" id="option3" value="option3" autocomplete="off"> Scatter Plot Matrix
 	  </label>
   </div>
 
@@ -83,7 +92,6 @@ circle.not-selected {
   </div>
 
   <div class="histogram_area">
-  	<p>hello ^^</p>
   </div>
 
   <script>
@@ -93,6 +101,7 @@ circle.not-selected {
 
   	drawSummaryTable();
   	drawScatterPlot();
+  	drawHistogram();
 
   	$("input[name='options']").change(function(d){
   		console.log($(this).val());
@@ -103,19 +112,75 @@ circle.not-selected {
   			$('.histogram_area').hide();
   		} else if (option=="option2") {
   			$('.table_area').hide();
-  			$('.scatter_plot_area').show();
-  			$('.histogram_area').hide();
-  		} else {
-  			$('.table_area').hide();
   			$('.scatter_plot_area').hide();
   			$('.histogram_area').show();
+  		} else {
+  			$('.table_area').hide();
+  			$('.scatter_plot_area').show();
+  			$('.histogram_area').hide();
   		}
   	});
     
 
   	
   	function drawHistogram() {
-  		console.log("drawHistogram!");
+  		d3.csv("/media/data.csv", function(data) {
+  			// data = data["z"];
+  			console.log("============");
+  			console.log(data);
+  			console.log("============");
+
+  			var formatCount = d3.format(",.0f");
+
+  			var svg = d3.select("body").select("div.histogram_area").append("svg"),
+				    margin = {top: 10, right: 30, bottom: 30, left: 30},
+				    width = +svg.attr("width") - margin.left - margin.right,
+				    height = +svg.attr("height") - margin.top - margin.bottom,
+				    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+				var min = d3.min(data, function(d){return parseFloat(d)});
+				var max = d3.max(data, function(d){return parseFloat(d)});
+
+				console.log("min = " + min);
+				console.log("max = " + max);
+
+				var x = d3.scale.linear()
+				    .domain([0, max])
+				    .rangeRound([0, width]);
+
+				var bins = d3.layout.histogram()
+				    .domain(x.domain())
+				    .thresholds(x.ticks(20))
+				    (data);
+
+				var y = d3.scale.linear()
+				    .domain([0, d3.max(bins, function(d) { return d.length; })])
+				    .range([height, 0]);
+
+				var bar = g.selectAll(".hist_bar")
+				  .data(bins)
+				  .enter().append("g")
+				    .attr("class", "hist_bar")
+				    .attr("transform", function(d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; });
+
+				bar.append("rect")
+				    .attr("x", 1)
+				    .attr("width", x(bins[0].x1) - x(bins[0].x0) - 1)
+				    .attr("height", function(d) { return height - y(d.length); });
+
+				bar.append("text")
+				    .attr("dy", ".75em")
+				    .attr("y", 6)
+				    .attr("x", (x(bins[0].x1) - x(bins[0].x0)) / 2)
+				    .attr("text-anchor", "middle")
+				    .text(function(d) { return formatCount(d.length); });
+
+				g.append("g")
+				    .attr("class", "axis axis--x")
+				    .attr("transform", "translate(0," + height + ")")
+				    .call(d3.axisBottom(x));
+
+  		});
   	}
 
 
@@ -135,7 +200,6 @@ circle.not-selected {
 	      tr.append('th').text("StdDev");
 
 	      for (i in columns) {
-	      	console.log(columns[i]);
 	      	var tr = tbody.append('tr');
 	      	var avg = d3.mean(data, function(d){return parseFloat(d[columns[i]])});
 	      	var min = d3.min(data, function(d){return parseFloat(d[columns[i]])});
@@ -151,32 +215,8 @@ circle.not-selected {
 	      	tr.append('td').text(median.toFixed(2));
 	      	tr.append('td').text(stddev.toFixed(2));
 	      }
-
-
-	      // thead.append('tr')
-	      //   .selectAll('td')
-	      //     .data(columns)
-	      //     .enter()
-	      //   .append('th')
-	      //     .text(function (d) { return d })
-
-	      // var rows = tbody.selectAll('tr')
-	      //     .data(data)
-	      //     .enter()
-	      //   .append('tr')
-
-	      // var cells = rows.selectAll('td')
-	      //     .data(function(row) {
-	      //       return columns.map(function (column) {
-	      //         return { column: column, value: row[column] }
-	      //       })
-	      //     })
-	      //     .enter()
-	      //   .append('td')
-	      //     .text(function (d) { return d.value })
-
+	      
 	      return table;
-
 	    }
 
 	    d3.csv("/media/data.csv", function(data) {
@@ -190,7 +230,7 @@ circle.not-selected {
   	function drawScatterPlot() {
   		var width = 960,
 		    size = 230,
-		    padding = 40;
+		    padding = 40;	
 
 			var x = d3.scale.linear()
 			    .range([padding / 2, size - padding / 2]);
@@ -210,7 +250,7 @@ circle.not-selected {
 
 			var color = d3.scale.category10();
 
-			d3.csv("/media/flowers.csv", function(error, data) {
+			d3.csv("/media/data.csv", function(error, data) {
 			  if (error) throw error;
 
 			  var domainByTrait = {},
@@ -218,7 +258,7 @@ circle.not-selected {
 			      n = traits.length;
 
 			  traits.forEach(function(trait) {
-			    domainByTrait[trait] = d3.extent(data, function(d) { return d[trait]; });
+			    domainByTrait[trait] = d3.extent(data, function(d) { return parseFloat(d[trait]); });
 			  });
 
 			  xAxis.tickSize(size * n);
@@ -283,8 +323,8 @@ circle.not-selected {
 			    cell.selectAll("circle")
 			        .data(data)
 			      .enter().append("circle")
-			        .attr("cx", function(d) { return x(d[p.x]); })
-			        .attr("cy", function(d) { return y(d[p.y]); })
+			        .attr("cx", function(d) { return x(parseFloat(d[p.x]))	; })
+			        .attr("cy", function(d) { return y(parseFloat(d[p.y])); })
 			        .attr("r", 4)
 			  }
 
