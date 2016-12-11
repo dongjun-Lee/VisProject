@@ -29,6 +29,6 @@ urlpatterns = [
     url(r'^dbscan/$', views.dbscan),
     url(r'^ajax/dbscan/$', views.ajax_dbscan),
     url(r'^hierarchical/$', views.hierarchical),
-    #url(r'^ajax/hierarchical/$', views.ajax_hierarchical),
+    url(r'^ajax/hierarchical/$', views.ajax_hierarchical),
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT,'show_indexes':True})
 ]

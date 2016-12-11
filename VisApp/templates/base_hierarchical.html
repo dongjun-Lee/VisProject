@@ -14,9 +14,19 @@
                   <div class="col-sm-3 parameters">
                     <input id="K-bar" type="text" data-slider-min="1" data-slider-max="10" data-slider-value="2"/>
                   </div>
+                  <!--
                   <label for="max-iter-bar" class="col-sm-1 control-label parameters">max_iter:</label>
                   <div class="col-sm-3 parameters">
                     <input id="max-iter-bar" type="text" data-slider-min="100" data-slider-max="500" data-slider-step="100" data-slider-value="300"/>
+                  </div>
+                  -->
+                  <label for="affinity-select" class="col-sm-1 control-label parameters">distance:</label>
+                  <div class ="col-sm-3 parameters">
+                    <select class='form-control' id="affinity-select">
+                      <option value="euclidean" selected="selected">Euclidean</option>
+                      <option value="manhattan">Manhattan</option>
+                      <option value="cosine">Cosine</option>
+                    </select>
                   </div>
                   <div class="col-sm-offset-1 col-sm-3">
                     <button id="draw-btn" type="button" class="btn btn-default">
@@ -55,12 +65,9 @@
     </div>
   </div>
   <script>
+
+
     var k_slider = new Slider("#K-bar",{
-      formatter: function(value){
-        return "Current value: " + value;
-      }
-    });
-    var max_iter_slider = new Slider("#max-iter-bar",{
       formatter: function(value){
         return "Current value: " + value;
       }
@@ -80,13 +87,17 @@
       $(".cal_col_btns.btn-primary").each(function(){
         selected_cal_cols.push($(this).text());
       });
+      
+      var e = document.getElementById("affinity-select");
+      var affinity = e.options[e.selectedIndex].value;
+      console.log("affinity = " + affinity);
 
       var req = $.ajax({
         method: "GET",
-        url: "/ajax/kmeans",
+        url: "/ajax/hierarchical",
         data: {
           "K": $("#K-bar").attr("value"),
-          "max_iter": $("#max-iter-bar").attr("value"),
+          "affinity": affinity,
           "vis_columns[]": selected_vis_cols,
           "cal_columns[]": selected_cal_cols
         }

@@ -48,7 +48,7 @@ def project_data(data, columns):
 def conv2array(data):
 	return np.array([row.values() for row in data])
 
-def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,min_samples=5):
+def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,min_samples=5,affinity="euclidean"):
 	data = load_csv()
 	columns = sorted(list(data[0].keys()))
 	if not vis_columns:
@@ -63,7 +63,7 @@ def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300
 	elif method == "dbscan":
 		result = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(training_data))
 	elif method == "hierarchical":
-		result = AgglomerativeClustering(n_clusters=K, affinity="euclidean")
+		result = AgglomerativeClustering(n_clusters=K, affinity=affinity).fit(conv2array(training_data))
 		
 	for i, row in enumerate(data):
 		data[i]["class_label"] = str(result.labels_[i])
@@ -120,19 +120,24 @@ def ajax_dbscan(request):
 	return HttpResponse(json.dumps(result), mimetype)
 
 def hierarchical(request):
-	#result, selected_result, vis_columns, cal_columns = do_clustering(method="hierarchical")
-	#save_csv(result, selected_result)
+	result, selected_result, vis_columns, cal_columns = do_clustering(method="hierarchical")
+	save_csv(result, selected_result)
 
-	return render(request, 'hierarchical.html');
-
-	# return render(request, 'hierarchical.html', {
-	# 	"data": tuple(selected_result),
-	# 	"vis_columns": tuple(vis_columns),
-	# 	"cal_columns": tuple(cal_columns)
-	# })
+	return render(request, 'hierarchical.html', {
+		"data": tuple(selected_result),
+		"vis_columns": tuple(vis_columns),
+		"cal_columns": tuple(cal_columns)
+	})
 
 def ajax_hierarchical(request):
-	pass
+	K = int(request.GET["K"].encode("utf-8"))
+	affinity = request.GET["affinity"].encode("utf-8")
+	selected_vis_columns = [element.encode("utf-8") for element in request.GET.getlist("vis_columns[]")]
+	selected_cal_columns = [element.encode("utf-8") for element in request.GET.getlist("cal_columns[]")]
+
+	result, selected_result, _, _ = do_clustering(vis_columns=selected_vis_columns, cal_columns=selected_cal_columns, method="hierarchical", K=K, affinity=affinity)
+	mimetype = "application/json"
+	return HttpResponse(json.dumps(result), mimetype)
 
 
 
