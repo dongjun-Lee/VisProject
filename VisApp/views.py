@@ -69,18 +69,22 @@ def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300
 	cal_column_dics = [dict([("name", c), ("selected", c in cal_columns)]) for c in columns]
 	return data, project_data(data, vis_columns+["class_label"]), vis_column_dics, cal_column_dics
 
-def save_csv(result):
+def save_csv(result, selected_result):
 	with open(settings.MEDIA_ROOT + "/result.csv", "w") as f:
 		w = csv.DictWriter(f, fieldnames=result[0].keys(), delimiter=",")
 		w.writeheader()
 		for row in result:
 			w.writerow(row)
+	
+	with open(settings.MEDIA_ROOT + "/selected_result.csv", "w") as f:
+		w = csv.DictWriter(f, fieldnames=selected_result[0].keys(), delimiter=",")
+		w.writeheader()
+		for row in selected_result:
+			w.writerow(row)
 
 def kmeans(request):
 	result, selected_result, vis_columns, cal_columns = do_clustering(method="kmeans")
-	save_csv(result)
-
-	print(selected_result)
+	save_csv(result, selected_result)
 
 	return render(request, 'kmeans.html', {
 		"data": tuple(selected_result),
@@ -99,7 +103,7 @@ def ajax_kmeans(request):
 	selected_cal_columns = [element.encode("utf-8") for element in request.GET.getlist("cal_columns[]")]
 
 	result, selected_result, _, _ = do_clustering(vis_columns=selected_vis_columns, cal_columns=selected_cal_columns, method="kmeans", K=K, max_iter=max_iter)
-	save_csv(result)
+	save_csv(result, selected_result)
 	mimetype = "application/json"
 	return HttpResponse(json.dumps(selected_result), mimetype)
 
