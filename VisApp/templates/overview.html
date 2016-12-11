@@ -59,6 +59,14 @@ circle.not-selected {
   shape-rendering: crispEdges;
 }
 
+text.hist_label {
+	font-size: 20px;
+	font-weight: bold;
+	fill: #575757;
+    dominant-baseline: hanging;
+
+}
+
 </style>	  
 {% endblock %}
 
@@ -139,17 +147,17 @@ circle.not-selected {
 	      	data.forEach(function(d) {
 	      		li.push(parseFloat(d[columns[i]]));
 	      	});
-	      	plotHistogram(li);
+	      	plotHistogram(li, columns[i]);
 	      }
 	    });
   	}
 
-  	function plotHistogram(data) {
+  	function plotHistogram(data, label) {
 		var values = data;
 
 		var formatCount = d3.format(",.0f");
 
-		var margin = {top: 10, right: 30, bottom: 30, left: 30},
+		var margin = {top: 10, right: 50, bottom: 30, left: 30},
 		    width = 700 - margin.left - margin.right,
 		    height = 200 - margin.top - margin.bottom;
 
@@ -203,6 +211,11 @@ circle.not-selected {
 		    .attr("transform", "translate(0," + height + ")")
 		    .call(xAxis);
 
+		svg.append("text")
+			.attr("class", "hist_label")
+			.attr("x", width + 15)
+			.attr("y", 30)
+			.text(label);
   	}
 
 
