@@ -8,6 +8,7 @@ from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import AgglomerativeClustering
 import numpy as np
+import copy
 
 import json
 import csv
@@ -51,6 +52,11 @@ def conv2array(data):
 def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,min_samples=5,affinity="euclidean"):
 	data = load_csv()
 	columns = sorted(list(data[0].keys()))
+	supplement = ["class_label"]
+
+	if "name" in columns:
+		columns.remove("name")
+		supplement.append("name")
 	if not vis_columns:
 		vis_columns = columns[:2]
 	if not cal_columns:
@@ -70,7 +76,7 @@ def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300
 
 	vis_column_dics = [dict([("name", c), ("selected", c in vis_columns)]) for c in columns]
 	cal_column_dics = [dict([("name", c), ("selected", c in cal_columns)]) for c in columns]
-	return data, project_data(data, vis_columns+["class_label"]), vis_column_dics, cal_column_dics
+	return data, project_data(data, vis_columns+supplement), vis_column_dics, cal_column_dics
 
 def save_csv(result, selected_result):
 	with open(settings.MEDIA_ROOT + "/result.csv", "w") as f:

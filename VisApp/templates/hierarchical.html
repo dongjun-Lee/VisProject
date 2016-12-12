@@ -41,7 +41,7 @@
       .direction("n")
       .offset([-10,0])
       .html(function(d){
-        return d[keys[0]] + " , " + d[keys[1]];
+        return d["name"];
       });
 
     var randomColor = (function(){
@@ -97,6 +97,7 @@
     function preprocess(data_){
       keys = Object.keys(data_[0]);
       keys.splice(keys.indexOf("class_label"),1);
+      keys.splice(keys.indexOf("name"),1);
       keys = keys.sort();
 
       var xs = data_.map(function(d){return parseFloat(d[keys[0]])});
@@ -226,7 +227,7 @@
 		d3.select("#main-body-matrix").select("svg").remove();
 
         var domainByTrait = {},
-            traits = d3.keys(data[0]).filter(function(d) { return d !== "class_label"; }),
+            traits = d3.keys(data[0]).filter(function(d) { return d !== "class_label" && d!=="name"; }),
             n = traits.length;
 
         traits.forEach(function(trait) {
