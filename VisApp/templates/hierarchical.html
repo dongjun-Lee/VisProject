@@ -15,8 +15,9 @@
     var keys;
     var K = 0;
 
-    var padding = {left:40, top:10, right:10, bottom: 40}
-    var label_padding = 10;
+    var padding = {left:60, top:10, right:10, bottom: 40}
+    var y_label_padding = 12;
+    var x_label_padding = 10;
 
     var svgWidth = 768 * 0.9;
     var svgHeight = 512 * 0.9;
@@ -145,13 +146,13 @@
 
     svg.append("text")
       .attr("text-anchor", "middle")
-      .attr("transform", "translate(" + (padding.left + chartWidth/2) + "," + (padding.top + padding.bottom + chartHeight-label_padding) + ")")
+      .attr("transform", "translate(" + (padding.left + chartWidth/2) + "," + (padding.top + padding.bottom + chartHeight-x_label_padding) + ")")
       .attr("class", "x_label")
       .text(keys[0]);
 
     svg.append("text")
       .attr("text-anchor", "middle")
-      .attr("transform","translate(" + label_padding + "," +  (padding.top + chartHeight/2) + ")rotate(-90)")
+      .attr("transform","translate(" + y_label_padding + "," +  (padding.top + chartHeight/2) + ")rotate(-90)")
       .attr("class", "y_label")
       .text(keys[1]);
   </script>
