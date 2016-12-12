@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^main/$', views.data),
     url(r'^data/$', views.data),
+    url(r'^main/upload$', views.uploadFile),
     url(r'^data/upload$', views.uploadFile),
     url(r'^overview/$', views.overview),
     url(r'^kmeans/$', views.kmeans),
