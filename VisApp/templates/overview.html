@@ -143,11 +143,13 @@ text.hist_label {
 	      console.log("======");
 	      // console.log(data);
 	      for (i in columns) {
-	      	var li = [];
-	      	data.forEach(function(d) {
-	      		li.push(parseFloat(d[columns[i]]));
-	      	});
-	      	plotHistogram(li, columns[i]);
+	      	if (columns[i] != "name") {
+		      	var li = [];
+		      	data.forEach(function(d) {
+		      		li.push(parseFloat(d[columns[i]]));
+		      	});
+		      	plotHistogram(li, columns[i]);
+		    }
 	      }
 	    });
   	}
@@ -157,8 +159,8 @@ text.hist_label {
 
 		var formatCount = d3.format(",.0f");
 
-		var margin = {top: 10, right: 50, bottom: 30, left: 30},
-		    width = 700 - margin.left - margin.right,
+		var margin = {top: 10, right: 80, bottom: 30, left: 30},
+		    width = 750 - margin.left - margin.right,
 		    height = 200 - margin.top - margin.bottom;
 
 
@@ -235,18 +237,20 @@ text.hist_label {
 	      tr.append('th').text("StdDev");
 
 	      for (i in columns) {
-	      	var tr = tbody.append('tr');
-	      	var avg = d3.mean(data, function(d){return parseFloat(d[columns[i]])});
-	      	var min = d3.min(data, function(d){return parseFloat(d[columns[i]])});
-	      	var max = d3.max(data, function(d){return parseFloat(d[columns[i]])});
-	      	var median = d3.median(data, function(d){return parseFloat(d[columns[i]])});
-	      	var stddev = d3.deviation(data, function(d){return parseFloat(d[columns[i]])});
-	      	tr.append('td').text(columns[i]);
-	      	tr.append('td').text(avg.toFixed(2));
-	      	tr.append('td').text(min.toFixed(2));
-	      	tr.append('td').text(max.toFixed(2));
-	      	tr.append('td').text(median.toFixed(2));
-	      	tr.append('td').text(stddev.toFixed(2));
+	      	if (columns[i] != "name"){
+		      	var tr = tbody.append('tr');
+		      	var avg = d3.mean(data, function(d){return parseFloat(d[columns[i]])});
+		      	var min = d3.min(data, function(d){return parseFloat(d[columns[i]])});
+		      	var max = d3.max(data, function(d){return parseFloat(d[columns[i]])});
+		      	var median = d3.median(data, function(d){return parseFloat(d[columns[i]])});
+		      	var stddev = d3.deviation(data, function(d){return parseFloat(d[columns[i]])});
+		      	tr.append('td').text(columns[i]);
+		      	tr.append('td').text(avg.toFixed(2));
+		      	tr.append('td').text(min.toFixed(2));
+		      	tr.append('td').text(max.toFixed(2));
+		      	tr.append('td').text(median.toFixed(2));
+		      	tr.append('td').text(stddev.toFixed(2));
+		    }
 	      }
 	      
 	      return table;
@@ -287,7 +291,9 @@ text.hist_label {
 			  if (error) throw error;
 
 			  var domainByTrait = {},
-			      traits = d3.keys(data[0]).filter(function(d) { return d !== "class_label"; }),
+			      traits = d3.keys(data[0]).filter(function(d) {
+			      	return (d !== "class_label" && d !=="name");
+			   	  }),
 			      n = traits.length;
 
 			  traits.forEach(function(trait) {
