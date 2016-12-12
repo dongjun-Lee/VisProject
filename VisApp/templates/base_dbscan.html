@@ -6,36 +6,50 @@
       <div class="row">
         <div class="col-lg-12">
           <h1 class="page-header">DBSCAN</h1>
-          <div id="conf-box" class="col-md-6">
-            <div class="panel panel-info">
-              <div class="panel panel-heading">
-                <h3 class="panel-title">Configuration</h3>
-              </div>
-              <div class="panel-body">
-                <form class="form-horizontal">
-                  <div class="form-group">
-                    <label for="eps-bar" class="col-sm-4 control-label" style="padding-top:0;">eps:</label>
-                    <div class="col-sm-8">
-                      <input id="eps-bar" type="text" data-slider-min="0.5" data-slider-max="2.5" data-slider-step="0.5" data-slider-value="1.5"/>
-                    </div>
+          <div class="panel panel-info">
+            <div class="panel-body">
+              <form class="form-horizontal">
+                <div class="form-group">
+                  <label for="eps-bar" class="col-sm-1 control-label parameters">eps:</label>
+                  <div class="col-sm-3 parameters">
+                    <input id="eps-bar" type="text" data-slider-min="0.5" data-slider-max="2.5" data-slider-step="0.5" data-slider-value="1.5"/>
                   </div>
-                </form>
-                <form class="form-horizontal">
-                  <div class="form-group">
-                    <label for="min-samples-bar" class="col-sm-4 control-label" style="padding-top:0;">min_samples:</label>
-                    <div class="col-sm-8">
-                      <input id="min-samples-bar" type="text" data-slider-min="1" data-slider-max="10"  data-slider-value="5"/>
-                    </div>
+                  <label for="min-samples-bar" class="col-sm-1 control-label parameters">min_samples:</label>
+                  <div class="col-sm-3 parameters">
+                    <input id="min-samples-bar" type="text" data-slider-min="1" data-slider-max="10" data-slider-value="5"/>
                   </div>
-                </form>
-                <button id="draw-btn" type="button" class="btn btn-default btn-lg col-sm-offset-4 col-sm-4">
-                  <span class="glyphicon glyphicon-pencil" aria-hidden"true"></span> Draw
-                </button>
+                  <div class="col-sm-offset-1 col-sm-3">
+                    <button id="draw-btn" type="button" class="btn btn-default">
+                      <span class="glyphicon glyphicon-pencil"></span> Draw
+                    </button>
+                    <button id="download-btn" type="button" class="btn btn-default">
+                      <span class="glyphicon glyphicon-download-alt"></span> Download
+                    </button>
+                  </div>
+                </div>
+              </form>
+              <div class="col-sm-2">
+                <div class="col-sm-12" style="margin-top:5px;">
+                  <h5 class="text-center">Visualization Columns</h5>
+                  <div class="btn-group-vertical col-sm-12" style="padding:0;" role="group">
+                    {% for c in vis_columns %}
+                    <button type="button" class="col_btns vis_col_btns btn btn-default {%if c.selected %}btn-primary{% endif %}">{{ c.name }}</button>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="col-sm-12" style="margin-top:15px;">
+                  <h5 class="text-center">Calculation Columns</h5>
+                  <div class="btn-group-vertical col-sm-12" style="padding:0;" role="group">
+                    {% for c in cal_columns %}
+                    <button type="button" class="col_btns cal_col_btns btn btn-default {%if c.selected %}btn-primary{% endif %}">{{ c.name }}</button>
+                    {% endfor %}
+                  </div>
+                </div>
               </div>
+              {% block dbscan_body %}
+              {% endblock %}
             </div>
           </div>
-          {% block dbscan_body %}
-          {% endblock %}
         </div>
       </div>
     </div>
@@ -52,24 +66,62 @@
       }
     });
 
+    $("#download-btn").on("click", function(){
+      window.location = "/media/result.csv";
+    });
+
     $("#draw-btn").on("click", function(){
+      var selected_vis_cols = [];
+      var selected_cal_cols = [];
+
+      $(".vis_col_btns.btn-primary").each(function(){
+        selected_vis_cols.push($(this).text());
+      });
+      $(".cal_col_btns.btn-primary").each(function(){
+        selected_cal_cols.push($(this).text());
+      });
+
       var req = $.ajax({
         method: "GET",
         url: "/ajax/dbscan",
         data: {
           "eps": $("#eps-bar").attr("value"),
-          "min_samples": $("#min-samples-bar").attr("value")
+          "min_samples": $("#min-samples-bar").attr("value"),
+          "vis_columns[]": selected_vis_cols,
+          "cal_columns[]": selected_cal_cols
         }
       })
       .done(function(res){
-        preprocess(res);
-        chart.selectAll(".dot")
-          .data(res)
-          .transition()
-          .duration(500)
-          .delay(function(d,i){return i*2})
-          .style("fill", function(d){return colors[parseInt(d[keys[2]])-1]});
+        if(selected_vis_cols.length >=3){
+          draw_scatter_matrix();
+          $("#main-body-plot").hide();
+          $("#main-body-matrix").show();
+        }
+        else{
+          preprocess(res);
+          chart.select(".x.axis").transition().duration(300).call(xAxis);
+          chart.select(".y.axis").transition().duration(300).call(yAxis);
+
+          d3.select(".x_label").text(keys[0]);
+          d3.select(".y_label").text(keys[1]);
+
+          chart.selectAll(".dot")
+            .data(res)
+            .transition()
+            .duration(500)
+            .delay(function(d,i){return i*2})
+            .attr("cx", function(d){return xScale(parseFloat(d[keys[0]]))})
+            .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))})
+            .style("fill", function(d){return colors[parseInt(d["class_label"])]});
+
+          $("#main-body-plot").show();
+          $("#main-body-matrix").hide();
+        }
       });
+    });
+
+    $(".col_btns").click(function(){
+      $(this).toggleClass("btn-primary");
     });
   </script>
 {% endblock %}

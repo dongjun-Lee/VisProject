@@ -63,7 +63,7 @@ def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300
 	elif method == "dbscan":
 		result = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(training_data))
 	elif method == "hierarchical":
-		result = AgglomerativeClustering(n_clusters=K, affinity=affinity).fit(conv2array(training_data))
+		result = AgglomerativeClustering(n_clusters=K, affinity=affinity, linkage="average").fit(conv2array(training_data))
 		
 	for i, row in enumerate(data):
 		data[i]["class_label"] = str(result.labels_[i])
@@ -96,8 +96,24 @@ def kmeans(request):
 	})
 
 def dbscan(request):
-	result, columns = do_clustering(method="dbscan")
-	return render(request, 'dbscan.html', {"data": tuple(result)})
+	result, selected_result, vis_columns, cal_columns = do_clustering(method="dbscan")
+	save_csv(result, selected_result)
+
+	return render(request, 'dbscan.html', {
+		"data": tuple(selected_result),
+		"vis_columns": tuple(vis_columns),
+		"cal_columns": tuple(cal_columns)
+	})
+
+def hierarchical(request):
+	result, selected_result, vis_columns, cal_columns = do_clustering(method="hierarchical")
+	save_csv(result, selected_result)
+
+	return render(request, 'hierarchical.html', {
+		"data": tuple(selected_result),
+		"vis_columns": tuple(vis_columns),
+		"cal_columns": tuple(cal_columns)
+	})
 
 def ajax_kmeans(request):
 	K = int(request.GET["K"].encode("utf-8"))
@@ -113,21 +129,13 @@ def ajax_kmeans(request):
 def ajax_dbscan(request):
 	eps = float(request.GET["eps"].encode("utf-8"))
 	min_samples = int(request.GET["min_samples"].encode("utf-8"))
-	selected_columns = [element.encode("utf-8") for element in request.GET.getlist("columns[]")]
+	selected_vis_columns = [element.encode("utf-8") for element in request.GET.getlist("vis_columns[]")]
+	selected_cal_columns = [element.encode("utf-8") for element in request.GET.getlist("cal_columns[]")]
 
-	result, columns = do_clustering(seleted_columns=selected_columns, method="dbscan", eps=eps, min_samples=min_samples)
-	mimetype = "application/json"
-	return HttpResponse(json.dumps(result), mimetype)
-
-def hierarchical(request):
-	result, selected_result, vis_columns, cal_columns = do_clustering(method="hierarchical")
+	result, selected_result, _, _ = do_clustering(vis_columns=selected_vis_columns, cal_columns=selected_cal_columns, method="dbscan", eps=eps, min_samples=min_samples)
 	save_csv(result, selected_result)
-
-	return render(request, 'hierarchical.html', {
-		"data": tuple(selected_result),
-		"vis_columns": tuple(vis_columns),
-		"cal_columns": tuple(cal_columns)
-	})
+	mimetype = "application/json"
+	return HttpResponse(json.dumps(selected_result), mimetype)
 
 def ajax_hierarchical(request):
 	K = int(request.GET["K"].encode("utf-8"))
@@ -136,8 +144,9 @@ def ajax_hierarchical(request):
 	selected_cal_columns = [element.encode("utf-8") for element in request.GET.getlist("cal_columns[]")]
 
 	result, selected_result, _, _ = do_clustering(vis_columns=selected_vis_columns, cal_columns=selected_cal_columns, method="hierarchical", K=K, affinity=affinity)
+	save_csv(result, selected_result)
 	mimetype = "application/json"
-	return HttpResponse(json.dumps(result), mimetype)
+	return HttpResponse(json.dumps(selected_result), mimetype)
 
 
 

@@ -131,7 +131,7 @@
       .attr("cx", function(d){return xScale(parseFloat(d[keys[0]]))})
       .attr("cy", function(d){return yScale(parseFloat(d[keys[1]]))})
       .attr("r", 3)
-      .style("fill", function(d){return colors[parseInt(d["class_label"])-1]})
+      .style("fill", function(d){return colors[parseInt(d["class_label"])]})
       .on("mouseover", tip.show)
       .on("mouseout", tip.hide);
 
