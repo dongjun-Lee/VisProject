@@ -45,6 +45,13 @@
                     {% endfor %}
                   </div>
                 </div>
+                <div class="col-sm-12">
+                  <div class="checkbox text-center">
+                    <label>
+                      <input id="norm-checkbox" type="checkbox" checked="checked">Normalize columns
+                    </label>
+                  </div>
+                </div>
               </div>
               {% block dbscan_body %}
               {% endblock %}
@@ -55,6 +62,12 @@
     </div>
   </div>
   <script>
+    $(document).ready(function(){
+      $("#norm-checkbox").on("click", function(){
+        $("#norm-checkbox").attr("checked", !$("#norm-checkbox").attr("checked"));
+      });
+    });
+
     var eps_slider = new Slider("#eps-bar",{
       formatter: function(value){
         return "Current value: " + value;
@@ -70,6 +83,10 @@
       window.location = "/media/result.csv";
     });
 
+    $("#norm-checkbox").on("click", function(){
+      $("#norm-checkbox").toggleClass("checked");
+    });
+
     $("#draw-btn").on("click", function(){
       var selected_vis_cols = [];
       var selected_cal_cols = [];
@@ -81,6 +98,11 @@
         selected_cal_cols.push($(this).text());
       });
 
+      var norm = "False";
+      if($("#norm-checkbox").attr("checked") == "checked"){
+        norm = "True";
+      }
+
       var req = $.ajax({
         method: "GET",
         url: "/ajax/dbscan",
@@ -88,7 +110,8 @@
           "eps": $("#eps-bar").attr("value"),
           "min_samples": $("#min-samples-bar").attr("value"),
           "vis_columns[]": selected_vis_cols,
-          "cal_columns[]": selected_cal_cols
+          "cal_columns[]": selected_cal_cols,
+          "norm": norm
         }
       })
       .done(function(res){

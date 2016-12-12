@@ -14,12 +14,6 @@
                   <div class="col-sm-3 parameters">
                     <input id="K-bar" type="text" data-slider-min="1" data-slider-max="10" data-slider-value="2"/>
                   </div>
-                  <!--
-                  <label for="max-iter-bar" class="col-sm-1 control-label parameters">max_iter:</label>
-                  <div class="col-sm-3 parameters">
-                    <input id="max-iter-bar" type="text" data-slider-min="100" data-slider-max="500" data-slider-step="100" data-slider-value="300"/>
-                  </div>
-                  -->
                   <label for="affinity-select" class="col-sm-1 control-label parameters">distance:</label>
                   <div class ="col-sm-3">
                     <select class="form-control" id="affinity-select">
@@ -55,6 +49,13 @@
                     {% endfor %}
                   </div>
                 </div>
+                <div class="col-sm-12">
+                  <div class="checkbox text-center">
+                    <label>
+                      <input id="norm-checkbox" type="checkbox" checked="checked">Normalize columns
+                    </label>
+                  </div>
+                </div>
               </div>
               {% block hierarchical_body %}
               {% endblock %}
@@ -65,7 +66,11 @@
     </div>
   </div>
   <script>
-
+    $(document).ready(function(){
+      $("#norm-checkbox").on("click", function(){
+        $("#norm-checkbox").attr("checked", !$("#norm-checkbox").attr("checked"));
+      });
+    });
 
     var k_slider = new Slider("#K-bar",{
       formatter: function(value){
@@ -75,6 +80,10 @@
 
     $("#download-btn").on("click", function(){
       window.location = "/media/result.csv";
+    });
+
+    $("#norm-checkbox").on("click", function(){
+      $("#norm-checkbox").toggleClass("checked");
     });
 
     $("#draw-btn").on("click", function(){
@@ -91,6 +100,11 @@
       var e = document.getElementById("affinity-select");
       var affinity = e.options[e.selectedIndex].value;
 
+      var norm = "False";
+      if($("#norm-checkbox").attr("checked") == "checked"){
+        norm = "True";
+      }
+
       var req = $.ajax({
         method: "GET",
         url: "/ajax/hierarchical",
@@ -98,7 +112,8 @@
           "K": $("#K-bar").attr("value"),
           "affinity": affinity,
           "vis_columns[]": selected_vis_cols,
-          "cal_columns[]": selected_cal_cols
+          "cal_columns[]": selected_cal_cols,
+          "norm": norm
         }
       })
       .done(function(res){
