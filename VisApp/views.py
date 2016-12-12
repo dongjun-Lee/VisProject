@@ -144,7 +144,7 @@ def ajax_dbscan(request):
 	selected_cal_columns = [element.encode("utf-8") for element in request.GET.getlist("cal_columns[]")]
 	scaling = ("True" == request.GET["norm"].encode("utf-8"))
 
-	result, selected_result, _, _ = do_clustering(vis_columns=selected_vis_columns,cal_columns=selected_cal_columns, method="kmeans", K=K, max_iter=max_iter, scaling=scaling)
+	result, selected_result, _, _ = do_clustering(vis_columns=selected_vis_columns,cal_columns=selected_cal_columns,method="dbscan", eps=eps, min_samples=min_samples, scaling=scaling)
 	save_csv(result, selected_result)
 	mimetype = "application/json"
 	return HttpResponse(json.dumps(selected_result), mimetype)
@@ -153,9 +153,10 @@ def ajax_hierarchical(request):
 	K = int(request.GET["K"].encode("utf-8"))
 	affinity = request.GET["affinity"].encode("utf-8")
 	selected_vis_columns = [element.encode("utf-8") for element in request.GET.getlist("vis_columns[]")]
+	selected_cal_columns = [element.encode("utf-8") for element in request.GET.getlist("cal_columns[]")]
 	scaling = ("True" == request.GET["norm"].encode("utf-8"))
 
-	result, selected_result, _, _ = do_clustering(vis_columns=selected_vis_columns,cal_columns=selected_cal_columns, method="kmeans", K=K, max_iter=max_iter, scaling=scaling)
+	result, selected_result, _, _ = do_clustering(vis_columns=selected_vis_columns,cal_columns=selected_cal_columns, method="hierarchical", K=K, affinity=affinity, scaling=scaling)
 	save_csv(result, selected_result)
 	mimetype = "application/json"
 	return HttpResponse(json.dumps(selected_result), mimetype)
