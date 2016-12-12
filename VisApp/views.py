@@ -7,6 +7,8 @@ from django.http import HttpResponse
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.preprocessing import scale
+
 import numpy as np
 import copy
 
@@ -47,9 +49,9 @@ def project_data(data, columns):
 	return selected_data
 
 def conv2array(data):
-	return np.array([row.values() for row in data])
+	return np.array([row.values() for row in data],dtype=float)
 
-def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,min_samples=5,affinity="euclidean"):
+def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,min_samples=5,affinity="euclidean",scaling=True):
 	data = load_csv()
 	columns = sorted(list(data[0].keys()))
 	supplement = ["class_label"]
@@ -62,14 +64,16 @@ def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300
 	if not cal_columns:
 		cal_columns = columns
 
-	training_data = project_data(data,cal_columns)
+	training_data = conv2array(project_data(data,cal_columns))
+	if scaling:
+		training_data = scale(training_data)
 
 	if method == "kmeans":
-		result = KMeans(n_clusters=K, max_iter=max_iter).fit(conv2array(training_data))
+		result = KMeans(n_clusters=K, max_iter=max_iter).fit(training_data)
 	elif method == "dbscan":
-		result = DBSCAN(eps=eps, min_samples=min_samples).fit(conv2array(training_data))
+		result = DBSCAN(eps=eps, min_samples=min_samples).fit(training_data)
 	elif method == "hierarchical":
-		result = AgglomerativeClustering(n_clusters=K, affinity=affinity, linkage="average").fit(conv2array(training_data))
+		result = AgglomerativeClustering(n_clusters=K, affinity=affinity, linkage="average").fit(training_data)
 		
 	for i, row in enumerate(data):
 		data[i]["class_label"] = str(result.labels_[i])

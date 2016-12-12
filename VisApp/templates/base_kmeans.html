@@ -45,6 +45,13 @@
                     {% endfor %}
                   </div>
                 </div>
+                <div class="col-sm-12">
+                  <div class="checkbox text-center">
+                    <label>
+                      <input type="checkbox">Normalize columns
+                    </label>
+                  </div>
+                </div>
               </div>
               {% block kmeans_body %}
               {% endblock %}
@@ -68,6 +75,10 @@
 
     $("#download-btn").on("click", function(){
       window.location = "/media/result.csv";
+    });
+
+    $("#norm-checkbox").on("click", function(){
+      $("#norm-checkbox").toggleClass("checked");
     });
 
     $("#draw-btn").on("click", function(){
