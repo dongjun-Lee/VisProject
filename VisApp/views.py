@@ -51,7 +51,7 @@ def project_data(data, columns):
 def conv2array(data):
 	return np.array([row.values() for row in data],dtype=float)
 
-def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300,eps=1.5,min_samples=5,affinity="euclidean",scaling=True):
+def do_clustering(vis_columns=[],cal_columns=[],method="kmeans",K=2,max_iter=300,eps=0.5,min_samples=5,affinity="euclidean",scaling=True):
 	data = load_csv()
 	columns = sorted(list(data[0].keys()))
 	supplement = ["class_label"]
